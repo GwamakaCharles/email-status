@@ -1,24 +1,28 @@
-# Email Status Microservice
+# Email Status
 
-This project implements a scenario where an email goes out via Mailgun. Once it’s out, Mailgun sends various events back (open, clicked, etc).
+This project implements the scenario that an email goes out via Mailgun (mailgun.com). Once it’s out, Mailgun sends various events back (open, clicked, etc). We have sent an email via Mailgun and now we expect those events sent to us via webhooks, hitting an API Gateway and then that information is proxied to a Lambda. The Lambda should do two things: save a copy of the raw webhook and publish a transformed version into SNS.
 
-When the email is sent out via Mailgun, these events is sent via webhooks, hitting an API Gateway and then that information is proxied to a Lambda. The Lambda does two things: save a copy of the raw webhook a database and publish a transformed version into AWS SNS.
+This project has been generated using the `aws-nodejs-typescript` template from the [Serverless framework](https://www.serverless.com/).
 
-This service was implemented using the [Serverless framework](https://www.serverless.com/).
+For detailed instructions, please refer to the [documentation](https://www.serverless.com/framework/docs/providers/aws/).
 
-For additional knowledge using this framework with AWS, please refer to the [documentation](https://www.serverless.com/framework/docs/providers/aws/).
 
-## Installation
+## Installation/deployment instructions
 
-Clone this repository on your local machine by usig the `git clone` command
+Clone this repository to your local machine by running the `git clone https://github.com/GwamakaCharles/email-status.git` command
 
 Depending on your preferred package manager, follow the instructions below to deploy your project.
 
 > **Requirements**: NodeJS `lts/fermium (v.14.15.0)`. If you're using [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to ensure you're using the same Node version in local and in your lambda's runtime.
 
-### Dependencies
+### Using NPM
 
 - Run `npm i` to install the project dependencies
+
+### Using Yarn
+
+- Run `yarn` to install the project dependencies
+
 
 ### Configurations
 
