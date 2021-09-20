@@ -6,7 +6,6 @@ This project has been generated using the `aws-nodejs-typescript` template from 
 
 For detailed instructions, please refer to the [documentation](https://www.serverless.com/framework/docs/providers/aws/).
 
-
 ## Installation/deployment instructions
 
 Clone this repository to your local machine by running the `git clone https://github.com/GwamakaCharles/email-status.git` command
@@ -23,8 +22,7 @@ Depending on your preferred package manager, follow the instructions below to de
 
 - Run `yarn` to install the project dependencies
 
-
-### Configurations
+## Configurations
 
 | :warning: WARNING                                                                           |
 | :------------------------------------------------------------------------------------------ |
@@ -38,7 +36,7 @@ Depending on your preferred package manager, follow the instructions below to de
 
 Go to the `src/functions/db.ts` file to change Mongodb database configuration parameters to deploy with your own database
 
-#### Storing Secrets and Keys
+## Storing Secrets and Keys
 
 For security, this guide will help to store secrets using Parameter Store provided by Systems Manager in AWS.
 
@@ -73,28 +71,56 @@ MAILGUN_DOMAIN="mailgun.XXXXXXXX.com" (Domain on mailgun)
 
 ## Testing the service
 
+This template contains a two lambda functions triggered by an HTTP request made
+on the provisioned API Gateway REST API `/sendEmail` and `/webhook` routes with `POST`
+method. The request body must be provided as `application/json`. The body
+structure is tested by API Gateway against `src/functions/sendEmail/schema.ts`
+and `src/functions/webhook/schema.ts`
+JSON-Schema definitions: must contain the `from, to, subject, html` and
+`event-data, signature` properties respectively.
+
+- requesting any other path than `/sendEmail` or `/webhook` with any other method than `POST` will result in API Gateway returning a `404` HTTP error code
+- sending a `POST` request to `/sendEmail` or `/webhook` with a payload **not**
+  containing the reuqired string properties will result in API Gateway
+  returning a `400` HTTP error code
+- sending a `POST` request to `/sendEmail` or `/webhook` with a payload
+  containing the required string properteis will result in API Gateway
+  returning a `200` HTTP status code.
+
+### Locally
+
+In order to test the sendEmail and webhook functions locally, run the following command:
+
+- `npx sls invoke local -f sendEmail --path src/functions/sendEmail/mock.json` if you're using NPM
+- `yarn sls invoke local -f sendEmail --path src/functions/sendEmail/mock.json`
+  if you're using Yarn
+
+- `npx sls invoke local -f webhook --path src/functions/webhook/mock.json` if you're using NPM
+- `yarn sls invoke local -f webhook --path src/functions/webhook/mock.json`
+  if you're using Yarn
+
+Check the [sls invoke local command documentation](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local/) for more information.
+
 ### Remotely
 
-Two API endpoint will be generated after deployment, found after running `npx sls deploy` command. Output should be in the format
+Two API endpoints will be generated after the deployment, found after running `npx sls deploy` command. Output should be in the format
 
 - https://ApiEndpoint/dev/sendEmail - This is the endpoint for sending email.
 
-This accepts a POST request and a payload in the following format:
+- https://ApiEndpoint/dev/webhook - This webhook should be configured on your mailgun account to send events (e.g opened, delivered, click e.t.c)
 
-```bash
-{
+Copy and replace your `url` - found in Serverless `deploy` command output - and `from, to, subject, html` parameters in the following `curl` command in your terminal or in Postman to test your newly deployed application.
+
+```
+curl --location --request POST 'https://ApiEndpoint/dev/sendEmail' \
+--header 'Content-Type: application/json' \
+--data-raw '{
     "to": ["abc@xyz.com"],
     "from": "you@your-domain.com", # Sender's email from your mailgun account
     "subject": "Email Service"
-    "html":"This is a test email from email service" #Body of the email
-}
+    "html":"This is a test email from email service" # Body of the email
+}'
 ```
-
-> Content-Type: application/json
-
-This can be tested from postman
-
-- https://ApiEndpoint/dev/webhook - This webhook should be configured on your mailgun account to send events (e.g opened, delivered, click e.t.c)
 
 > :warning: As is, this template, once deployed, opens a **public** endpoint within your AWS account resources. Anybody with the URL can actively execute the API Gateway endpoint and the corresponding lambda.
 
